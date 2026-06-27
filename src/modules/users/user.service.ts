@@ -10,6 +10,7 @@ import RedisService from "../../common/service/redis.service.js";
 import { Compare, Hash } from "../../common/utils/security/hash.security.js";
 import { randomUUID } from "node:crypto";
 import TokenService from "../../common/service/token.services.js";
+import { S3Service } from "../../common/service/s3service.js";
 
 
 
@@ -19,29 +20,30 @@ export class UserService {
         private readonly userRepository: UserRepository,
         private readonly redisService: RedisService,
         private readonly tokenService: TokenService,
+        private readonly S3Service: S3Service,
     ) { }
 
     async getUsers() {
         return await this.userRepository.find()
     }
 
-    async SignUp( body:CreateUserDto) {
-        const {userName,email,password,cPassword,age,phone,}= body
-        const emailExist= await this.userRepository.findOne({
-            filter:{email}
+    async SignUp(body: CreateUserDto) {
+        const { userName, email, password, cPassword, age, phone, } = body
+        const emailExist = await this.userRepository.findOne({
+            filter: { email }
         })
-        if(emailExist){
+        if (emailExist) {
             throw new ConflictException("email already exist")
         }
-         const otp = await generateOTP();
+        const otp = await generateOTP();
         eventEmitter.emit(emailEnum.confirmEmail, async () => {
             await sendEmail({
                 to: email,
                 subject: emailEnum.confirmEmail,
                 html: emailTemplate(otp)
             });
-            await this.redisService.setValue({ key: this.redisService.otp_key({ email, subject:emailEnum.confirmEmail }), value: Hash({ plainText: `${otp}` }), ttl: 60 })
-            await this.redisService.incr(this.redisService.max_otp_key({ email, subject:emailEnum.confirmEmail }))
+            await this.redisService.setValue({ key: this.redisService.otp_key({ email, subject: emailEnum.confirmEmail }), value: Hash({ plainText: `${otp}` }), ttl: 60 })
+            await this.redisService.incr(this.redisService.max_otp_key({ email, subject: emailEnum.confirmEmail }))
 
         })
         const user = await this.userRepository.create({
@@ -49,22 +51,22 @@ export class UserService {
             email,
             password,
             age,
-            phone:encrypt(phone)
+            phone: encrypt(phone)
         })
 
         return user
     }
 
 
-    async signIn( body:signInDto) {
-       const { email, password, }: signInDto =body;
+    async signIn(body: signInDto) {
+        const { email, password, }: signInDto = body;
         const user = await this.userRepository.findOne({
             filter: {
                 email
             }
         })
         if (!user) {
-            throw new BadRequestException ("user not exist")
+            throw new BadRequestException("user not exist")
         }
 
         if (!Compare({ plainText: password, cipherText: user.password })) {
@@ -88,6 +90,10 @@ export class UserService {
                 jwtid
             }
         })
-        return {access_token, refresh_token}
+        return { access_token, refresh_token }
+    }
+
+    async uploadProfileImage(file: Express.Multer.File) {
+        return this.S3Service.uploadFile({ file, path: "profile" })
     }
 }

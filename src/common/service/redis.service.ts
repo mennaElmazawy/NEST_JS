@@ -6,11 +6,11 @@ type RedisKeyType = { email: string, subject?: emailEnum }
 
 @Injectable()
 export class RedisService {
-   
+
     constructor(
-         @Inject("REDIS_CLIENT") private readonly redisClient: RedisClientType
+        @Inject("REDIS_CLIENT") private readonly redisClient: RedisClientType
     ) {
-      
+
     }
     private handleEvent() {
         this.redisClient.on("error", (err) => { console.log("Redis Client Error ❌", err) })
@@ -167,7 +167,7 @@ export class RedisService {
     }
     //=================================socket.io===================================
 
-     soketKey(userId: Types.ObjectId) {
+    soketKey(userId: Types.ObjectId) {
         return `user:Socket:${userId}`;
     }
     async addSocket({ userId, SocketId }: { userId: Types.ObjectId, SocketId: string }) {
