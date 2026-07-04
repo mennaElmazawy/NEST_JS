@@ -33,13 +33,15 @@ abstract class BaseRepository<TDocument> {
         filter?: QueryFilter<TDocument>,
         projection?: ProjectionType<TDocument>,
         options?: QueryOptions<TDocument>
-    }={}): Promise<HydratedDocument<TDocument>[] | []> {
+    } = {}): Promise<HydratedDocument<TDocument>[] | []> {
         return this.model.find(filter, projection)
             .sort(options?.sort)
             .skip(options?.skip!)
             .limit(options?.limit!)
             .populate(options?.populate as PopulateOptions)
     }
+
+    
 
 
     async findByIdAndUpdate({
@@ -99,7 +101,7 @@ abstract class BaseRepository<TDocument> {
         search?: QueryFilter<T>
     }) {
         page = +page! || 1;
-        limit = +limit! || 1;
+        limit = +limit! || 2;
 
         if (page < 1) page = 1;
         if (limit < 1) limit = 2;

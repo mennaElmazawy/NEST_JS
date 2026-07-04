@@ -37,7 +37,7 @@ export class S3Service {
         const command = new PutObjectCommand({
             Bucket: process.env.AWS_BUCKET_NAME,
             ACL,
-            Key: `social_media_app/${path}/${randomUUID()}__${file.originalname}`,
+            Key: `E_Commerce_app/${path}/${randomUUID()}__${file.originalname}`,
             Body: store_type === Store_Enum.memory ? file.buffer : fs.createReadStream(file.path),
             ContentType: file.mimetype
         })

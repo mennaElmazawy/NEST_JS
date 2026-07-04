@@ -1,4 +1,4 @@
-import { BadRequestException, ConflictException, Injectable } from "@nestjs/common";
+import { BadGatewayException, BadRequestException, ConflictException, Injectable } from "@nestjs/common";
 import UserRepository from "../../DB/repository/user.repositories.js";
 import { CreateUserDto, signInDto } from "./userDto/user.dto.js";
 import { encrypt } from "../../common/utils/security/encrypt.security.js";
@@ -11,6 +11,9 @@ import { Compare, Hash } from "../../common/utils/security/hash.security.js";
 import { randomUUID } from "node:crypto";
 import TokenService from "../../common/service/token.services.js";
 import { S3Service } from "../../common/service/s3service.js";
+import { RoleEnum } from "../../common/enum/user.enum.js";
+import { Types } from "mongoose";
+import { HUserDocument } from "../../DB/models/user.model.js";
 
 
 
@@ -77,7 +80,7 @@ export class UserService {
         const access_token = await this.tokenService.GenerateToken({
             payload: { id: user._id, email: user.email, role: user.role },
             options: {
-                secret: process.env.ACCESS_SECRET_KEY!,
+                secret: user.role === RoleEnum.user ? process.env.ACCESS_SECRET_KEY_USER!: process.env.ACCESS_SECRET_KEY_ADMIN!,
                 expiresIn: "1h",
                 jwtid
             }
@@ -85,7 +88,7 @@ export class UserService {
         const refresh_token = await this.tokenService.GenerateToken({
             payload: { id: user._id, email: user.email, role: user.role },
             options: {
-                secret: process.env.REFRESH_SECRET_KEY!,
+                secret: user.role === RoleEnum.user ? process.env.REFRESH_SECRET_KEY_USER!: process.env.REFRESH_SECRET_KEY_ADMIN!,
                 expiresIn: "1y",
                 jwtid
             }
@@ -96,4 +99,25 @@ export class UserService {
     async uploadProfileImage(file: Express.Multer.File) {
         return this.S3Service.uploadFile({ file, path: "profile" })
     }
+
+    async deleteProfile( user: HUserDocument) {
+            const profile = await this.userRepository.findOne({ filter: { _id: user._id } })
+            if (!profile) {
+                throw new ConflictException("profile not exist")
+            }
+    
+            const deleted = await this.userRepository.findOneAndUpdate({
+                filter: { _id: user._id },
+                update: {
+                    deletedAt: new Date(),
+                   
+                }
+            })
+            if (!deleted) {
+                throw new BadGatewayException("fail to delete profile")
+    
+            }
+            return deleted
+    
+        }
 }

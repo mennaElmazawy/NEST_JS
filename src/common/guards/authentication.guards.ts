@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import TokenService from '../service/token.services.js';
 import { TokenEnum } from '../enum/token.enum.js';
 import { Reflector } from '@nestjs/core';
-import { token_type_key } from '../decorator/auth.decorator.js';
+import { token_key } from '../decorator/token.decorator.js';
+
 
 
 
@@ -17,7 +18,7 @@ export class AuthenticationGuard implements CanActivate {
     async canActivate(context: ExecutionContext): Promise<boolean> {
 
 
-        const  tokenType= this.reflector.get(token_type_key, context.getHandler()) 
+        const  tokenType= this.reflector.get(token_key, context.getHandler()) 
 
         let req: any
         let authorization: string = ""
@@ -43,11 +44,14 @@ export class AuthenticationGuard implements CanActivate {
         }
 
         const { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY } = await this.tokenService.getSegnature(prefix)
+        
         let secret = tokenType === TokenEnum.access_token ? ACCESS_SECRET_KEY : REFRESH_SECRET_KEY;
+       
         try {
-            var { user, decoded } = await this.tokenService.decodeToken_and_fetchUser(token, secret);
+            var { user, decoded } = await this.tokenService.decodeToken_and_fetchUser(token,secret);
+            
         } catch (error) {
-            throw new HttpException({message:"invalid token",error}, 401)
+            throw new HttpException({message:"invalid token error",error}, 401)
         }
 
         req.user = user;

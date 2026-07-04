@@ -51,11 +51,11 @@ class TokenService {
         return { ACCESS_SECRET_KEY, REFRESH_SECRET_KEY };
     }
     decodeToken_and_fetchUser = async (token: string, secret: string) => {
-
         const decoded = await this.VerifyToken({
             token: token,
             options: { secret }
         }) as IDecodedToken;
+
         if (!decoded || !decoded?.id) {
             throw new BadRequestException("invalid token")
         }
@@ -63,7 +63,7 @@ class TokenService {
         if (!user) {
             throw new BadRequestException("user not exist")
         }
-       
+
 
         // const revokeToken = await redisService.get(redisService.revoked_key({ userId: decoded.id, jti: decoded.jti! }));
         // if (revokeToken) {

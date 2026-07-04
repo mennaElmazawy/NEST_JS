@@ -3,22 +3,20 @@ import { TokenEnum } from "../enum/token.enum.js"
 import { RoleEnum } from "../enum/user.enum.js"
 import { AuthorizationGuard } from "../guards/authorization.guards.js"
 import { AuthenticationGuard } from "../guards/authentication.guards.js"
+import { Token } from "./token.decorator.js"
+import { Role } from "./roles.decorator.js"
 
 
-export const token_type_key ="token_type_key"
-export const access_roles_key ="access_roles_key"
-
-export const TokenType = (token_type: TokenEnum=TokenEnum.access_token) => {
-    return SetMetadata(token_type_key,token_type)
-}
-export const Roles = (access_roles:RoleEnum[]) => {
-    return SetMetadata(access_roles_key,access_roles)
-}
-
-export function Auth({ token_type, access_roles }:{token_type: TokenEnum, access_roles: RoleEnum[]}){
+export function Auth({
+    tokenType=TokenEnum.access_token,
+    role=[RoleEnum.user]
+}: {
+    tokenType?: TokenEnum,
+    role?: RoleEnum[]
+}={}) {
     return applyDecorators(
-        TokenType(token_type),
-        Roles(access_roles),
-        UseGuards(AuthenticationGuard,AuthorizationGuard)
+        Token(tokenType),
+        Role(role),
+        UseGuards(AuthenticationGuard, AuthorizationGuard)
     )
 }

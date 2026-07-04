@@ -1,29 +1,9 @@
-import { Allow, IsEmail, IsInt, IsNotEmpty, IsOptional, IsString, IsStrongPassword, Length, registerDecorator, Validate, ValidateIf, ValidationOptions } from "class-validator";
+import { Allow, IsEmail, IsInt, IsMongoId, IsNotEmpty, IsOptional, IsString, IsStrongPassword, Length, registerDecorator, Validate, ValidateIf, ValidationOptions } from "class-validator";
 
-import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import { IsMatch } from "../../../common/decorator/user.decorator.js";
+import { Types } from "mongoose";
 
-@ValidatorConstraint({ name: 'customText', async: false })
-export class matchKey implements ValidatorConstraintInterface {
-    validate(value: string, args: ValidationArguments) {
-        return args.value === args.object[args.constraints[0]];
-    }
 
-    defaultMessage(args: ValidationArguments) {
-
-        return `${args.property} not match ${args.constraints[0]}`;
-    }
-}
-export function IsMatch(constraints: string[], validationOptions?: ValidationOptions) {
-    return function (object: Object, propertyName: string) {
-        registerDecorator({
-            target: object.constructor,
-            propertyName: propertyName,
-            options: validationOptions,
-            constraints,
-            validator: matchKey,
-        });
-    };
-}
 
 
 export class CreateUserDto {
@@ -68,6 +48,7 @@ export class signInDto {
     password: string;
 
 }
+
 
 
 

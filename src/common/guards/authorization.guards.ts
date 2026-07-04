@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import TokenService from '../service/token.services.js';
 import { TokenEnum } from '../enum/token.enum.js';
 import { Reflector } from '@nestjs/core';
-import { access_roles_key, token_type_key } from '../decorator/auth.decorator.js';
+import { role_key } from '../decorator/roles.decorator.js';
+
 
 
 
@@ -16,7 +17,7 @@ export class AuthorizationGuard implements CanActivate {
     ) { }
     async canActivate(context: ExecutionContext): Promise<boolean> {
         try {
-            const Roles = this.reflector.get(access_roles_key, context.getHandler()) as string[]
+            const Roles = this.reflector.get(role_key, context.getHandler()) as string[]
 
             let req: any
             if (context.getType() === "http") {
